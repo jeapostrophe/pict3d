@@ -43,6 +43,8 @@
  dir-reflect
  angles->dir
  dir->angles
+ angles->dir-yp
+ dir->angles-yp
  pos+
  pos-
  pos-between
@@ -251,6 +253,60 @@
       (define r (flsqrt (+ (sqr x) (sqr y) (sqr z))))
       (values (radians->degrees (atan y x))
               (radians->degrees (asin (/ z r)))))))
+
+;angles->dir-yp
+;Positive direction on yaw axis is always up.
+;"zx" means yaw around z-axis from x.
+(: angles->dir-yp (-> Real Real Symbol Dir))
+(define (angles->dir-yp ang1 ang2 axis) 
+  (let ([ang1  (fl (degrees->radians ang1))]
+        [ang2  (fl (degrees->radians ang2))])
+        (define ca1 (flcos ang1))
+        (define sa1 (flsin ang1))
+        (define ca2 (flcos ang2))
+        (define sa2 (flsin ang2))
+    (cond
+      ;Yaw around Z axis
+      [(equal? 'zx axis) (dir (fl*  1.0 (fl* ca1 ca2)) (fl* 1.0 (fl* sa1 ca2)) (fl* -1.0 sa2))] ;Yaw from x, Pitch counterclockwise.
+      [(equal? 'zy axis) (dir (fl* -1.0 (fl* sa1 ca2)) (fl* 1.0 (fl* ca1 ca2)) (fl*  1.0 sa2))] ;Yaw from y, Pitch counterclockwise.
+      ;Yaw around Y axis
+      [(equal? 'yz axis) (dir (fl* 1.0 (fl* sa1 ca2)) (fl* -1.0 sa2) (fl* 1.0 (fl* ca1 ca2)))] ;Yaw from z, Pitch counterclockwise.
+      [(equal? 'yx axis) (dir (fl* 1.0 (fl* ca1 ca2)) (fl* 1.0 sa2) (fl* -1.0 (fl* sa1 ca2)))] ;Yaw from x, Pitch counterclockwise.
+      ;Yaw around X axis
+      [(equal? 'xy axis) (dir (fl* -1.0 sa2) (fl* 1.0 (fl* ca1 ca2)) (fl* 1.0 (fl* sa1 ca2)))] ;Yaw from y, Pitch counterclockwise.
+      [(equal? 'xz axis) (dir (fl* 1.0 sa2) (fl* -1.0 (fl* sa1 ca2)) (fl* 1.0 (fl* ca1 ca2)))] ;Yaw from z, Pitch counterclockwise.
+      [else (dir 0.0 0.0 0.0)]
+      )
+    ))
+
+
+;dir->angles-yp
+;Opposite of angles->dir-yp.
+(: dir->angles-yp (-> Dir Symbol (Listof Flonum)))
+(define (dir->angles-yp dv axis)
+    (let* ([x (fl(dir-dx dv))]
+           [y (fl(dir-dy dv))]
+           [z (fl(dir-dz dv))]
+           [r (flsqrt (fl+ (fl* x x) (fl+ (fl* y y) (fl* z z))))])
+      (cond
+        ;Yaw around Z axis
+        [(equal? 'zx axis) (list (radians->degrees (atan y x))
+                            (radians->degrees (asin (fl/ z r))))] ;Yaw from x, Pitch counterclockwise.
+        [(equal? 'zy axis) (list (radians->degrees (atan x y))
+                            (radians->degrees (asin (fl/ z r))))] ;Yaw from y, Pitch counterclockwise.
+        ;Yaw around y axis
+        [(equal? 'yz axis) (list (radians->degrees (atan x z))
+                            (radians->degrees (asin (fl/ y r))))] ;Yaw from z, Pitch counterclockwise.
+        [(equal? 'yx axis) (list (radians->degrees (atan z x))
+                            (radians->degrees (asin (fl/ y r))))] ;Yaw from x, Pitch counterclockwise.
+        ;Yaw around x axis
+        [(equal? 'xy axis) (list (radians->degrees (atan z y))
+                            (radians->degrees (asin (fl/ x r))))] ;Yaw from y, Pitch counterclockwise.
+        [(equal? 'xz axis) (list (radians->degrees (atan y z))
+                            (radians->degrees (asin (fl/ x r))))] ;Yaw from z, Pitch counterclockwise.
+        [else (list 0.0 0.0)]
+         )
+  ))
 
 (: pos+ (->* [Pos Dir] [Real] Pos))
 (define pos+
