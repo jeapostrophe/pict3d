@@ -24,6 +24,7 @@
   (world-state-key world-state frame time code)
   (world-state-release world-state frame time code)
   (world-state-mouse world-state frame time x y code)
+  (world-state-resize world-state frame time width height)
   (world-state-draw world-state frame time)
   #:fallbacks [(define (world-state-valid? s n t) #t)
                (define (world-state-stop? s n t) #f)
@@ -31,6 +32,7 @@
                (define (world-state-key s n t k) s)
                (define (world-state-release s n t k) s)
                (define (world-state-mouse s n t x y e) s)
+               (define (world-state-resize s n t width height e) s)
                (define (world-state-draw s n t) empty-pict3d)])
 
 (define big-bang3d-state/c
@@ -44,6 +46,9 @@
                                       world-state?))]
    [world-state-mouse    (or/c #f (-> world-state? exact-nonnegative-integer? flonum?
                                       exact-integer? exact-integer? string?
+                                      world-state?))]
+   [world-state-resize    (or/c #f (-> world-state? exact-nonnegative-integer? flonum?
+                                      exact-integer? exact-integer?
                                       world-state?))]
    [world-state-draw     (or/c #f (-> world-state? exact-nonnegative-integer? flonum? pict3d?))]))
 
@@ -64,4 +69,5 @@
    #:on-key world-state-key
    #:on-release world-state-release
    #:on-mouse world-state-mouse
+   #:on-resize world-state-resize
    #:on-draw world-state-draw))
