@@ -29,6 +29,7 @@ Universe/networking
                [gl-config (Instance GL-Config%)])
          (init-field [on-key (-> Boolean String Void)]
                      [on-mouse (-> Integer Integer String Void)]
+                     [on-resize (-> Integer Integer Void)]
                      [on-start (-> Void)]
                      [pict3d Pict3D #:optional])))
 
@@ -36,7 +37,7 @@ Universe/networking
 (define pict3d-world-canvas%
   (class pict3d-canvas%
     (init parent gl-config)
-    (init-field on-key on-mouse on-start)
+    (init-field on-key on-mouse on-resize on-start)
     
     (super-new [parent parent]
                [gl-config gl-config]
@@ -80,11 +81,15 @@ Universe/networking
       (when (not painted?)
         (set! painted? #t)
         (on-start)))
+    
+    (define/override (on-size width height)
+      (on-resize width height))
     ))
 
 (struct key ([release? : Boolean] [code : String]) #:transparent)
 (struct mouse ([x : Integer] [y : Integer] [type : String]) #:transparent)
-(define-type Input (U key mouse))
+(struct resize ([x : Integer] [y : Integer]) #:transparent)
+(define-type Input (U key mouse resize))
 
 (: big-bang3d
    (All (S) (-> S
@@ -105,6 +110,7 @@ Universe/networking
                 [#:on-key (-> S Natural Flonum String S)]
                 [#:on-release (-> S Natural Flonum String S)]
                 [#:on-mouse (-> S Natural Flonum Integer Integer String S)]
+                [#:on-resize (-> S Natural Flonum Integer Integer S)]
                 S)))
 (define (big-bang3d
          init-state
@@ -126,6 +132,8 @@ Universe/networking
          #:on-release [on-release (λ ([s : S] [n : Natural] [t : Flonum] [k : String]) s)]
          #:on-mouse [on-mouse (λ ([s : S] [n : Natural] [t : Flonum]
                                           [x : Integer] [y : Integer] [e : String]) s)]
+         #:on-resize [on-resize (λ ([s : S] [n : Natural] [t : Flonum]
+                                            [width : Integer] [height : Integer]) s)]
          ;; For networked worlds
          ;#:on-receive [on-receive #f]
          ;#:register [register #f]
@@ -201,6 +209,9 @@ Universe/networking
          [on-mouse
           (λ ([x : Integer] [y : Integer] [e : String])
             (when running? (async-channel-put event-channel (mouse x y e))))]
+         [on-resize 
+          (λ ([width : Integer] [height : Integer])
+            (when running? (async-channel-put event-channel (resize width height))))]
          ;; Start handler: post to the semaphore so the main loop can start
          [on-start  (λ () (semaphore-post start-sema))]
          ;; Initial pict
@@ -294,6 +305,10 @@ Universe/networking
           ;; Mouse events
           [(mouse x y e)
            (set-current-state! 'on-mouse (on-mouse current-state frame frame-time x y e))
+           (event-loop)]
+          ;; Window events
+          [(resize width height)
+           (set-current-state! 'on-resize (on-resize current-state frame frame-time width height))
            (event-loop)]
           [_
            (void)]))

@@ -2838,6 +2838,8 @@ There is currently no support for networked games.
                      [#:on-release on-release (-> S Natural Flonum String S) (λ (s n t k) s)]
                      [#:on-mouse on-mouse (-> S Natural Flonum Integer Integer String S)
                                  (λ (s n t x y e) s)]
+                     [#:on-resize on-resize (-> S Natural Flonum Integer Integer S)
+                                 (λ (s n t width height) s)]
                      [#:on-draw on-draw (-> S Natural Flonum Pict3D) (λ (s n t) empty-pict3d)]
                      )
          S]{
@@ -2850,7 +2852,7 @@ On startup, @racket[big-bang3d] begins to keep track of
  @item{The time @racket[t : Flonum], in milliseconds, initially set to @racket[0.0].}
 ]
 All callback functions---@racket[valid-state?], @racket[pause-state?], @racket[stop-state?], @racket[on-frame],
-@racket[on-key], @racket[on-release], @racket[on-mouse] and @racket[on-draw]---receive the current
+@racket[on-key], @racket[on-release], @racket[on-mouse], @racket[on-resize] and @racket[on-draw]---receive the current
 values of @racket[s], @racket[n] and @racket[t].
 
 There are two phases in running a 3D world program: initialization and frame loop.
@@ -2897,6 +2899,9 @@ that indicates what kind of event occurred.
 Values for @racket[e] are the symbols returned by the method @method[mouse-event% get-event-type]
 of @racket[mouse-event%], converted to strings, unless the symbol is @racket['motion].
 In that case, @racket[e] is @racket["drag"] if a mouse button is pressed; otherwise @racket["move"].
+
+Resize events are handled by computing @racket[(on-resize s n t width height)] to yield a new state @racket[s].
+The values @racket[width] and @racket[width] are the window's new width and height, in pixels.
 
 After every state update, the frame loop
 @itemlist[#:style 'ordered
