@@ -142,7 +142,7 @@
 
 (: flv3slerp (-> FlV3 FlV3 Flonum FlV3))
 (define (flv3slerp v1 v2 α)
-  (define angle (acos (flv3cos v1 v2)))
+  (define angle (flacos (flv3cos v1 v2)))
   (define s (sin angle))
   (define β1 (/ (sin (* (- 1.0 α) angle)) s))
   (define β2 (/ (sin (* α angle)) s))
