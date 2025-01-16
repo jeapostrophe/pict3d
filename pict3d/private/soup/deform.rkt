@@ -32,9 +32,9 @@
     (define wa (fls3apply/pos t va))
     (define wc (fls3apply/pos t vc))
     (define angle
-      (+ (acos (flv3bend-cos w1 wa wb))
-         (acos (flv3bend-cos wa wb wc))
-         (acos (flv3bend-cos wb wc w2))))
+      (+ (flacos (flv3bend-cos w1 wa wb))
+         (flacos (flv3bend-cos wa wb wc))
+         (flacos (flv3bend-cos wb wc w2))))
     (> (* angle (- 1.0 1e-8)) max-angle))
   
   (: maybe-add-edge (-> (Listof (edge (Pair Boolean FlV3)))
@@ -85,19 +85,19 @@
         (define e12?
           (and (not keep12?)
                (or d12?
-                   (and m1 m2 (> (acos (flv3cos m1 m2)) max-angle))
+                   (and m1 m2 (> (flacos (flv3cos m1 m2)) max-angle))
                    (arc-or-blend-split? blend v1 v12 v2 w1 (fls3apply/pos t v12) w2))))
         
         (define e23?
           (and (not keep23?)
                (or d23?
-                   (and m2 m3 (> (acos (flv3cos m2 m3)) max-angle))
+                   (and m2 m3 (> (flacos (flv3cos m2 m3)) max-angle))
                    (arc-or-blend-split? blend v2 v23 v3 w2 (fls3apply/pos t v23) w3))))
         
         (define e31?
           (and (not keep31?)
                (or d31?
-                   (and m3 m1 (> (acos (flv3cos m3 m1)) max-angle))
+                   (and m3 m1 (> (flacos (flv3cos m3 m1)) max-angle))
                    (arc-or-blend-split? blend v3 v31 v1 w3 (fls3apply/pos t v31) w1))))
         
         (let* ([es  (maybe-add-edge es blend vtx1 vtx2 v1 v2 v12 d12? e12? d12)]
@@ -212,7 +212,7 @@
     (define w1 (deform v1))
     (define w2 (deform v2))
     (define w3 (deform v3))
-    (define angle (acos (flv3bend-cos w2 w3 w1)))
+    (define angle (flacos (flv3bend-cos w2 w3 w1)))
     (if (> angle acute-threshold/2)
         (list* (edge vtx2 vtx3 (cons #t (blend v2 v3 0.5)))
                (edge vtx3 vtx1 (cons #t (blend v3 v1 0.5)))
@@ -235,10 +235,10 @@
     (define w31 (fls3apply/pos t v31))
     (define angle (if (< (flv3dist w23 w1)
                          (flv3dist w2 w31))
-                      (max (acos (flv3bend-cos w31 w1 w2))
-                           (acos (flv3bend-cos w2 w23 w31)))
-                      (max (acos (flv3bend-cos w1 w2 w23))
-                           (acos (flv3bend-cos w23 w31 w1)))))
+                      (max (flacos (flv3bend-cos w31 w1 w2))
+                           (flacos (flv3bend-cos w2 w23 w31)))
+                      (max (flacos (flv3bend-cos w1 w2 w23))
+                           (flacos (flv3bend-cos w23 w31 w1)))))
     (if (> angle acute-threshold/2)
         (cons (edge vtx1 vtx2 (cons #t (blend v1 v2 0.5))) es)
         es))

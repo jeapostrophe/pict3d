@@ -250,7 +250,7 @@
     (λ (x y z)
       (define r (flsqrt (+ (sqr x) (sqr y) (sqr z))))
       (values (radians->degrees (atan y x))
-              (radians->degrees (asin (/ z r)))))))
+              (radians->degrees (flasin (/ z r)))))))
 
 (: pos+ (->* [Pos Dir] [Real] Pos))
 (define pos+

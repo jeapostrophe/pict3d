@@ -1222,7 +1222,7 @@
         (for/fold ([n : FlV3  zero-flv3]) ([vs  (in-list vss)])
           (match-define (list v1 v2 v3) (map vertex-pos vs))
           (define n1 (vertex-normal-or-zero (first vs)))
-          (define angle (acos (flv3corner-cos v3 v1 v2)))
+          (define angle (flacos (flv3corner-cos v3 v1 v2)))
           (flv3+ n (flv3+ (flv3* n0 (* (- 1.0 α) angle))
                           (flv3* n1 (* α angle))))))
       ;; Set first vertex's normal
